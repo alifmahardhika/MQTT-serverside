@@ -2,6 +2,10 @@
 
 import mariadb
 
+'''
+=========INSERT CREDENTIALS HERE========
+'''
+# demo:
 DB_HOST = 'localhost'
 DB_USER = 'alif'
 DB_PASS = 'alif'
