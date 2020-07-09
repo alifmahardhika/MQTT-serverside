@@ -1,44 +1,74 @@
-#------------------------------------------
-#--- Author: Pradeep Singh
-#--- Date: 20th January 2017
-#--- Version: 1.0
-#--- Python Ver: 2.7
-#--- Details At: https://iotbytes.wordpress.com/store-mqtt-data-from-sensors-into-sql-database/
-#------------------------------------------
+# pip install mysql-connector-python <<<<<<<<<<<<------------ INSTALL MYSQL CONNECTOR FIRST (bash)
 
-import sqlite3
+import mariadb
 
-# SQLite DB Name
-DB_Name =  "IoT.db"
+DB_HOST = 'localhost'
+DB_USER = 'alif'
+DB_PASS = 'alif'
+DB_NAME = 'iotdb'
+db = None
+try:
+    db = mariadb.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASS
+    )
+    print("\n=========================Database connection to " +
+          DB_HOST + " SUCCESS===================================\n")
+except Exception:
+    print("\n=========================Database connection to " +
+          DB_HOST + " FAILED===================================\n")
+    quit()
 
-# SQLite DB Table Schema
-TableSchema="""
-drop table if exists DHT22_Temperature_Data ;
-create table DHT22_Temperature_Data (
-  id integer primary key autoincrement,
-  SensorID text,
-  Date_n_Time text,
-  Temperature text
-);
+# define database cursor
+executor = db.cursor()
+# query all databases and check if any db named iotdb alreadyexists
+executor.execute("SHOW DATABASES")
+dbExisted = False
+for a in executor:
+    if(a[0] == DB_NAME):
+        dbExisted = True
 
 
-drop table if exists DHT22_Humidity_Data ;
-create table DHT22_Humidity_Data (
-  id integer primary key autoincrement,
-  SensorID text,
-  Date_n_Time text,
-  Humidity text
-);
-"""
+# create database
+print('Creating database ...')
+if (dbExisted):
+    print('Database with name \"' + DB_NAME +
+          '\" already existed, try dropping the previous database of rename the database to ber created, then run this program again\n')
+    quit()
 
-#Connect or Create DB File
-conn = sqlite3.connect(DB_Name)
-curs = conn.cursor()
+try:
+    executor.execute("CREATE DATABASE iotdb")
+    print('Database created')
 
-#Create Tables
-sqlite3.complete_statement(TableSchema)
-curs.executescript(TableSchema)
+except Exception:
+    print(Exception)
 
-#Close DB
-curs.close()
-conn.close()
+# create tables
+print("creating tables ...")
+
+db = mariadb.connect(
+    host=DB_HOST,
+    user=DB_USER,
+    password=DB_PASS,
+    database=DB_NAME
+)
+executor = db.cursor()
+
+
+del_if_tbl_exists = "DROP TABLE IF EXISTS Temperature_Records"
+create_tbl = "CREATE TABLE temperature_records (id INT AUTO_INCREMENT PRIMARY KEY, sensor_mac_addr CHAR(17), time_stamp VARCHAR(20), temperature TINYINT)"
+
+
+try:
+    executor.execute(del_if_tbl_exists)
+    executor.execute(create_tbl)
+    print('Table created')
+except mariadb.Error as e:
+
+    print('table creation failed: {e}')
+    quit()
+
+# Close DB
+executor.close()
+db.close()
