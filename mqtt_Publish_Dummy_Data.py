@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import random
 import threading
 import json
+from getmac import get_mac_address as gma
 from datetime import datetime
 
 # ====================================================
@@ -9,7 +10,7 @@ from datetime import datetime
 MQTT_Broker = "app.itsmyhealth.id"
 MQTT_Port = 1883
 Keep_Alive_Interval = 45
-MQTT_Topic_Temperature = "Home/BedRoom/DHT22/Temperature"
+MQTT_Topic_Temperature = "Temperature"
 
 # ====================================================
 
@@ -44,10 +45,10 @@ def publish_To_Topic(topic, message):
 
 def publish_Fake_Sensor_Values_to_MQTT():
     threading.Timer(3.0, publish_Fake_Sensor_Values_to_MQTT).start()
-    Temperature_Fake_Value = float("{0:.2f}".format(random.uniform(1, 30)))
+    Temperature_Fake_Value = float("{0:.2f}".format(random.uniform(30, 39)))
 
     Temperature_Data = {}
-    Temperature_Data['Sensor_ID'] = "Dummy-2"
+    Temperature_Data['Mac_ID'] = gma()
     Temperature_Data['Date'] = (
         datetime.today()).strftime("%d-%b-%Y %H:%M:%S:%f")
     Temperature_Data['Temperature'] = Temperature_Fake_Value

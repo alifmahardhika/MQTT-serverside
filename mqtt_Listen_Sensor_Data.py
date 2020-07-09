@@ -1,11 +1,12 @@
 import paho.mqtt.client as mqtt
 # from store_Sensor_Data_to_DB import sensor_Data_Handler
 
+
 # MQTT Settings
 MQTT_Broker = "app.itsmyhealth.id"
 MQTT_Port = 1883
 Keep_Alive_Interval = 45
-MQTT_Topic = "Home/BedRoom/DHT22/Temperature"
+MQTT_Topic = "Temperature"
 # Subscribe to all Sensors at Base Topic
 
 
@@ -21,7 +22,7 @@ def on_message(mosq, obj, msg):
     # For details of "sensor_Data_Handler" function please refer "sensor_data_to_db.py"
     print("MQTT Data Received...")
     print("MQTT Topic: " + msg.topic)
-    print("Data: " + msg.payload)
+    print("Data: " + msg.payload.decode('utf-8'))
     # sensor_Data_Handler(msg.topic, msg.payload)
 
 
