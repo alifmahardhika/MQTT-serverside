@@ -60,8 +60,8 @@ db = mariadb.connect(
 executor = db.cursor()
 
 
-del_if_tbl_exists = "DROP TABLE IF EXISTS Temperature_Records"
-create_tbl = "CREATE TABLE temperature_records (id INT AUTO_INCREMENT PRIMARY KEY, sensor_mac_addr CHAR(17), time_stamp VARCHAR(20), temperature TINYINT)"
+del_if_tbl_exists = "DROP TABLE IF EXISTS temperature_records"
+create_tbl = "CREATE TABLE temperature_records (id INT AUTO_INCREMENT PRIMARY KEY, sensor_mac_addr CHAR(17), time_stamp VARCHAR(27), temperature TINYINT)"
 
 
 try:
