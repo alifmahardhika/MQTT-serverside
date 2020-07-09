@@ -49,9 +49,9 @@ def publish_Fake_Sensor_Values_to_MQTT():
 
     Temperature_Data = {}
     Temperature_Data['sensor_mac_addr'] = gma()
-    Temperature_Data['Date'] = (
+    Temperature_Data['time_stamp'] = (
         datetime.today()).strftime("%d-%b-%Y %H:%M:%S:%f")
-    Temperature_Data['Temperature'] = Temperature_Fake_Value
+    Temperature_Data['temperature'] = Temperature_Fake_Value
     temperature_json_data = json.dumps(Temperature_Data)
 
     print("Publishing fake Temperature Value: " +

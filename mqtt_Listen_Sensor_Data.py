@@ -1,5 +1,5 @@
 import paho.mqtt.client as mqtt
-# from store_Sensor_Data_to_DB import sensor_Data_Handler
+from store_Sensor_Data_to_DB import sensor_Data_Handler
 
 
 # MQTT Settings
@@ -23,11 +23,11 @@ def on_message(mosq, obj, msg):
     print("MQTT Data Received...")
     print("MQTT Topic: " + msg.topic)
     print("Data: " + msg.payload.decode('utf-8'))
-    # sensor_Data_Handler(msg.topic, msg.payload)
+    sensor_Data_Handler(msg.topic, msg.payload)
 
 
 def on_subscribe(mosq, obj, mid, granted_qos):
-    print('called subs')
+    # print('called subs')
     pass
 
 
