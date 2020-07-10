@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 ========================================================================================================================
 NOTE: Program untuk menerima published mqtt messages. Adalah MQTT Client jadi basically bisa dijalanin dari mana aja 
