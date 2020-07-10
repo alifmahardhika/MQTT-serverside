@@ -12,10 +12,31 @@ import mariadb
 
 
 # MARIA DB Name
-DB_HOST = 'localhost'
-DB_USER = 'alif'
-DB_PASS = 'alif'
-DB_NAME = 'iotdb'
+DB_HOST = ''
+DB_USER = ''
+DB_PASS = ''
+DB_NAME = ''
+
+
+'''
+==================================================
+get db credentials dari file db config  
+==================================================
+'''
+
+
+def getDBConfig():
+    f = open("dbconfig.txt", "r")
+    config = f.readline().split(',')
+    global DB_HOST
+    global DB_USER
+    global DB_PASS
+    global DB_NAME
+    DB_HOST = config[0]
+    DB_USER = config[1]
+    DB_PASS = config[2]
+    DB_NAME = config[3]
+    f.close()
 
 
 '''
@@ -42,7 +63,7 @@ def temp_data_handler(jsonData):
 '''
 ========================================================================================================================
 Main Function yang di panggil program listener. Proses:
-1. Try untuk connect ke database dengan predefined credentials, output berhasil/tidak diprint di terminal yang menjalankan program listener
+1. Try untuk connect ke database dengan credentials, output berhasil/tidak diprint di terminal yang menjalankan program listener
 2. Initialize kursor database yang akan execute query
 3. Try untuk coba execute sql query, output berhasil/ tidak diprint di terminal yang menjalankan program listener
 4. Close connection database
@@ -53,6 +74,7 @@ TODO: Buat cases berdasarkan jenis topik
 
 def sensor_data_handler(Topic, jsonData):
     # set db connection
+    getDBConfig()
     try:
         conn = mariadb.connect(
             host=DB_HOST,
@@ -69,12 +91,13 @@ def sensor_data_handler(Topic, jsonData):
         cur.execute(temp_data_handler(jsonData))
         print("INSERTED!\n")
     except Exception as e:
-        print("FAILED")
+        print(e)
 
     cur.close()
     conn.close()
 
-# MAIN TEST PROCESS (uncomment supaya bisa tes jalanin program ini aja)
+
+# MAIN TEST PROCESS(uncomment supaya bisa tes jalanin program ini aja)
 # top = "Temperature"
-# dat = '{"sensor_mac_addr": "dc:87", "temperature": 32.13}'
+# dat = '{"sensor_mac_addr": "dc:53:60:d8:77:32", "time_stamp": "10-Jul-2020 10:13:55:812105", "temperature": 38.58}'
 # sensor_data_handler(top, dat)

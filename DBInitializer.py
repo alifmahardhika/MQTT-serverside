@@ -7,16 +7,35 @@ Credentials perlu disesuaikan dengan target database
 import mariadb
 
 
-# =========INSERT CREDENTIALS HERE========
-# for testing purpose:
-DB_HOST = 'localhost'
-DB_USER = 'alif'
-DB_PASS = 'alif'
-DB_NAME = 'iotdb'
+# =========set up file dbconfig.txt dengan format host,user,pass,dbname ========
+DB_HOST = ''
+DB_USER = ''
+DB_PASS = ''
+DB_NAME = ''
 # =========================================
+'''
+==================================================
+get db credentials dari file db config  
+==================================================
+'''
+
+
+def getDBConfig():
+    f = open("dbconfig.txt", "r")
+    config = f.readline().split(',')
+    global DB_HOST
+    global DB_USER
+    global DB_PASS
+    global DB_NAME
+    DB_HOST = config[0]
+    DB_USER = config[1]
+    DB_PASS = config[2]
+    DB_NAME = config[3]
+    f.close()
 
 
 db = None
+getDBConfig()
 # Try connection
 try:
     db = mariadb.connect(
