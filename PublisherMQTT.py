@@ -11,6 +11,7 @@ import threading
 import json
 from getmac import get_mac_address as gma  # simulate mac address
 from datetime import datetime
+from math import floor
 
 # MQTT Settings
 MQTT_Broker = "app.itsmyhealth.id"
@@ -52,17 +53,20 @@ Program Functions
 
 # Publisher topic dan payload
 def publish_to_topic(topic, message):
-    mqttc.publish(topic, message)
+    # mqttc.publish(topic, message)
     print("Published: " + str(message) + " " + "on MQTT Topic: " + str(topic))
 
 
 # Dummy data untuk testing. Struktur payload di publisher asli HARUS sama dengan struktur payload disini
 def dummy_payload_builder():
     threading.Timer(3.0, dummy_payload_builder).start()
-    temperature_dummy_value = float("{0:.2f}".format(random.uniform(30, 39)))
+    temperature_dummy_value = float("{0:.2f}".format(random.uniform(33, 39)))
 
     payload = {}
-    payload['sensor_mac_addr'] = gma()
+    mac = gma()[0:-2]
+    # dummy mac addresses (5 different mac address)
+    mac += str(floor(random.uniform(10, 15)))
+    payload['sensor_mac_addr'] = mac
     payload['time_stamp'] = (
         datetime.today()).strftime("%d-%b-%Y %H:%M:%S:%f")
     payload['temperature'] = temperature_dummy_value
