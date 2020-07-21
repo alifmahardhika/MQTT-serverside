@@ -53,7 +53,7 @@ Program Functions
 
 # Publisher topic dan payload
 def publish_to_topic(topic, message):
-    # mqttc.publish(topic, message)
+    mqttc.publish(topic, message)
     print("Published: " + str(message) + " " + "on MQTT Topic: " + str(topic))
 
 
