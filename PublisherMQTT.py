@@ -15,7 +15,7 @@ from math import floor
 
 # MQTT Settings
 MQTT_Broker = "app.itsmyhealth.id"
-MQTT_Port = 1883
+MQTT_Port = 1882
 Keep_Alive_Interval = 45
 MQTT_TOPIC_TEMPERATURE = "Temperature"
 

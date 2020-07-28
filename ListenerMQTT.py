@@ -14,7 +14,7 @@ from SensorDataToDB import sensor_data_handler
 
 # MQTT Settings
 MQTT_BROKER = "app.itsmyhealth.id"
-MQTT_PORT = 1883
+MQTT_PORT = 1882
 Keep_Alive_Interval = 45
 MQTT_TOPIC = "Temperature"  # kalau ada multiple topics bisa pakai wildcard
 
