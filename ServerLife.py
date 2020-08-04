@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 '''
 ========================================================================================================================
-NOTE: Program untuk menerima published mqtt messages. Adalah MQTT Client jadi basically bisa dijalanin dari mana aja 
-tidak harus di execute diserver. 
+NOTE: Program untuk menerima published mqtt messages. Adalah MQTT Client jadi basically bisa dijalanin dari mana aja
+tidak harus di execute diserver.
 NOTE: Execute di terminal manapun tidak harus di server.
 NOTE: Tiap database maksimal hanya 1 program ini yang jalan, kalau lebih nanti ada database entry yang duplicate
 NOTE: Requirements: pip install paho-mqtt
@@ -10,6 +10,7 @@ NOTE: Requirements: pip install paho-mqtt
 '''
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 from SensorDataToDB import sensor_data_handler
+from datetime import datetime
 
 
 # MQTT Settings
@@ -43,9 +44,10 @@ def on_connect(mosq, obj, flags, rc):
 def on_message(mosq, obj, msg):
     print("MQTT Data Received...")
     print("MQTT Topic: " + msg.topic)
-    print("Data: " + msg.payload.decode('utf-8'))  # call function data handler
-    mqttc.publish("/server-response", '{"isConnected":true}')
-    print("PUBLISHED RESPONSE")
+    serverdatetime = datetime.today().strftime("%d:%b:%Y:%H:%M:%S:%f:")
+    mqttc.publish("/server-response",
+                  '{"isConnected":true, "datetime" : ' + serverdatetime + '}')
+    print('{"isConnected":true, "datetime" : ' + serverdatetime + '}')
 
 
 # dipakai buat debug
