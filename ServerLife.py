@@ -44,7 +44,7 @@ def on_connect(mosq, obj, flags, rc):
 def on_message(mosq, obj, msg):
     print("MQTT Data Received...")
     print("MQTT Topic: " + msg.topic)
-    serverdatetime = datetime.today().strftime("%d:%b:%Y:%H:%M:%S:%f:")
+    serverdatetime = datetime.today().strftime("%d:%m:%Y:%H:%M:%S:%f:")
     mqttc.publish("/server-response",
                   '{"isConnected":true, "datetime" : ' + serverdatetime + '}')
     print('{"isConnected":true, "datetime" : ' + serverdatetime + '}')
