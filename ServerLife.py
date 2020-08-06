@@ -10,7 +10,7 @@ NOTE: Requirements: pip install paho-mqtt
 '''
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 from SensorDataToDB import sensor_data_handler
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # MQTT Settings
@@ -44,7 +44,9 @@ def on_connect(mosq, obj, flags, rc):
 def on_message(mosq, obj, msg):
     print("MQTT Data Received...")
     print("MQTT Topic: " + msg.topic)
-    serverdatetime = datetime.today().strftime("%d:%m:%Y:%H:%M:%S:%f:")
+    seven_hours_from_server = datetime.now() + timedelta(hours=7)
+
+    serverdatetime = '{:%d:%m:%Y:%H:%M:%S:%f:}'.format(seven_hours_from_server)
     mqttc.publish("/server-response",
                   '{"isConnected":true, "datetime" : ' + serverdatetime + '}')
     print('{"isConnected":true, "datetime" : ' + serverdatetime + '}')
