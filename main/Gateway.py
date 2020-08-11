@@ -11,13 +11,11 @@ DB_NAME = ''
 
 
 def getDBConfig():
-    print("hoe")
     try:
-        f = open("../dbconfig.txt", "r")
+        f = open("main\dbconfig.txt", "r")
         config = f.readline().split(',')
     except Exception as e:
         print(e)
-    print("yea")
 
     global DB_HOST
     global DB_USER
@@ -32,7 +30,11 @@ def getDBConfig():
 
 def db_connect():
     mydb = mariadb.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASS,
+        database=DB_NAME
+    )
     try:
         db_cursor = mydb.cursor()
         return db_cursor
@@ -43,17 +45,17 @@ def db_connect():
 
 def initial_processor(topic, message):
     getDBConfig()
-    # try:
-    #     db_cursor = db_connect()
-    #     if(db_cursor == None):
-    #         raise Exception("Database connection failed")
-    # except Exception as e:
-    #     print(e)
-    #     return None
+    try:
+        db_cursor = db_connect()
+        if(db_cursor == None):
+            raise Exception("Database connection failed")
+    except Exception as e:
+        print(e)
+        return None
     mac_addr = topic.split("/")[2]
-    # if(len(mac_addr) != 17):
-    #     raise Exception("invalid mac address")
-    # sql_query = "SELECT client FROM sensor_records WHERE sensor_mac_addr = '" + mac_addr + "'"
-    # db_cursor.execute(sql_query)
-    # client = db_cursor.fetchone()
-    return("topic: " + topic + "\nmessage: " + message)
+    if(len(mac_addr) != 17):
+        raise Exception("invalid mac address")
+    sql_query = "SELECT client FROM sensor_records WHERE sensor_mac_addr ='" + mac_addr + "'"
+    db_cursor.execute(sql_query)
+    client = db_cursor.fetchone()[0]
+    return str(client)

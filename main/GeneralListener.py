@@ -42,7 +42,6 @@ def on_connect(mosq, obj, flags, rc):
 # ditrigger kalau ada message dengan topic yang di subscribe
 # akan memanggil function data handler dari file SensorDataToDB.py
 def on_message(mosq, obj, msg):
-    print("received msg")
     print(initial_processor(msg.topic, msg.payload.decode('utf-8')))
 
     # print("MQTT Data Received...")
