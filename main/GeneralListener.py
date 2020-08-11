@@ -42,7 +42,11 @@ def on_connect(mosq, obj, flags, rc):
 # ditrigger kalau ada message dengan topic yang di subscribe
 # akan memanggil function data handler dari file SensorDataToDB.py
 def on_message(mosq, obj, msg):
-    print(initial_processor(msg.topic, msg.payload.decode('utf-8')))
+    process_finished = initial_processor(
+        msg.topic, msg.payload.decode('utf-8'))
+    if(process_finished):
+        process_finished = None  # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
+        pass
 
     # print("MQTT Data Received...")
     # print("MQTT Topic: " + msg.topic)
