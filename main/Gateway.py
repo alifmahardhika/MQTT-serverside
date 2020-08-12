@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 import json
 import mariadb
+from pathlib import Path
 
 # MQTT Settings
 MQTT_Broker = "app.itsmyhealth.id"
@@ -48,8 +49,10 @@ def on_disconnect(client, userdata, rc):
 
 
 def getDBConfig():
+    config_location = Path(__file__).absolute().parent
+    file_location = config_location / 'dbconfig.txt'
     try:
-        f = open("main\dbconfig.txt", "r")
+        f = file_location.open()
         config = f.readline().split(',')
     except Exception as e:
         print(e)
@@ -85,8 +88,12 @@ def get_client(mac_addr, db_cursor):
         raise Exception("invalid mac address")
     sql_query = "SELECT client FROM sensor_records WHERE sensor_mac_addr ='" + mac_addr + "'"
     db_cursor.execute(sql_query)
-    client = db_cursor.fetchone()[0]
-    return str(client)
+    try:
+        client = db_cursor.fetchone()[0]
+        return str(client)
+    except Exception as e:
+        print('Client not found')
+        print(e)
 
 
 def create_client(client):
@@ -103,7 +110,7 @@ def create_client(client):
 
 def publish_to_thingsboard(mqttclient, message):
     try:
-        mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message, qos=1)
+        mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message)
         return True
     except Exception as e:
         print(e)
@@ -111,6 +118,7 @@ def publish_to_thingsboard(mqttclient, message):
 
 
 def initial_processor(topic, message):
+    print("CALLED INIT: " + topic + "\n" + message)
     global pub_complete
     getDBConfig()
     try:
@@ -120,18 +128,21 @@ def initial_processor(topic, message):
     except Exception as e:
         print(e)
         return None
-    mac_addr = topic.split("/")[2]
+    mac_addr = topic.split("/")[3]
     client = get_client(mac_addr, db_cursor)
-
     mqtt_client = create_client(client)
     mqtt_client.connect(MQTT_Broker, int(MQTT_Port), int(Keep_Alive_Interval))
     publish_to_thingsboard(mqtt_client, message)
     print("pb: " + str(pub_complete))
-    mqtt_client.loop_start()
-    while(pub_complete == False):
-        continue
-    mqtt_client.loop_stop()
+    # mqtt_client.loop_start()
+    # while(pub_complete == False):
+    #     continue
+    # mqtt_client.loop_stop()
     mqtt_client.disconnect()
     pub_complete = False
     print("FINISHED")
     return True
+
+
+# initial_processor('/sensor/v1/50:02:91:87:5e:3d',
+#                   '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.3"}')

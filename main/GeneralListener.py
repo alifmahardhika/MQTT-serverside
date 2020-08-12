@@ -11,14 +11,14 @@ NOTE: Requirements: pip install paho-mqtt
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 from datetime import datetime, timedelta
 from Gateway import initial_processor
-
+from CheckConnHandler import check_conn_processor
 
 # MQTT Settings
 MQTT_BROKER = "app.itsmyhealth.id"
 MQTT_PORT = 1882
 Keep_Alive_Interval = 45
 # kalau ada multiple topics bisa pakai wildcard
-MQTT_TOPIC = "/sensor/#"  # /sensor/
+MQTT_TOPIC = "/sensor/v1/#"  # /sensor/
 
 
 '''
@@ -42,14 +42,28 @@ def on_connect(mosq, obj, flags, rc):
 # ditrigger kalau ada message dengan topic yang di subscribe
 # akan memanggil function data handler dari file SensorDataToDB.py
 def on_message(mosq, obj, msg):
-    process_finished = initial_processor(
-        msg.topic, msg.payload.decode('utf-8'))
-    if(process_finished):
-        process_finished = None  # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
-        pass
 
-    # print("MQTT Data Received...")
-    # print("MQTT Topic: " + msg.topic)
+    topic_type = msg.topic.split("/")[3]
+    if(topic_type == "server-connection"):
+        connection_checked = check_conn_processor(
+            msg.topic, msg.payload.decode('utf-8'))
+        if(connection_checked):
+            # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
+            connection_checked = None
+            pass
+    elif(len(topic_type) == 17):
+        process_finished = initial_processor(
+            msg.topic, msg.payload.decode('utf-8'))
+        if(process_finished):
+            process_finished = None  # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
+            pass
+    else:
+        print("Bad topic request type: " + topic_type + " - " +
+              datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    print("------------ON MESSAGE SEQUENCE FINSIHED----------")
+
+    print("MQTT Data Received...")
+    print("MQTT Topic: " + msg.topic)
 
     # v1/devices/me/telemetry
     # mqttc.publish("/server-response",
