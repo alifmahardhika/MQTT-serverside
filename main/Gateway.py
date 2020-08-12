@@ -98,7 +98,7 @@ def get_client(mac_addr, db_cursor):
 
 def create_client(client):
     tb_credentials = client_credentials.get(client)
-    mqttc = mqtt.Client()
+    mqttc = mqtt.Client('fromserver')
     mqttc.on_connect = on_connect
     mqttc.on_disconnect = on_disconnect
     mqttc.on_publish = on_publish
@@ -110,7 +110,7 @@ def create_client(client):
 
 def publish_to_thingsboard(mqttclient, message):
     try:
-        mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message)
+        mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message, qos=1)
         return True
     except Exception as e:
         print(e)
@@ -134,10 +134,10 @@ def initial_processor(topic, message):
     mqtt_client.connect(MQTT_Broker, int(MQTT_Port), int(Keep_Alive_Interval))
     publish_to_thingsboard(mqtt_client, message)
     print("pb: " + str(pub_complete))
-    # mqtt_client.loop_start()
-    # while(pub_complete == False):
-    #     continue
-    # mqtt_client.loop_stop()
+    mqtt_client.loop_start()
+    while(pub_complete == False):
+        continue
+    mqtt_client.loop_stop()
     mqtt_client.disconnect()
     pub_complete = False
     print("FINISHED")
@@ -145,4 +145,4 @@ def initial_processor(topic, message):
 
 
 # initial_processor('/sensor/v1/50:02:91:87:5e:3d',
-#                   '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.3"}')
+#                   '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.1"}')
