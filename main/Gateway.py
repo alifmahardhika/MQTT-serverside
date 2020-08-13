@@ -45,7 +45,6 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_publish(client, userdata, mid):
-    print('called pub')
     global pub_complete
     pub_complete = True
     pass
@@ -104,7 +103,8 @@ def get_client(mac_addr, db_cursor):
         return str(client)
     except Exception as e:
         print('Client not found')
-        print(e)
+        # print(e)
+        return None
 
 
 def create_client(client):
@@ -121,7 +121,6 @@ def create_client(client):
 def publish_to_thingsboard(mqttclient, message):
     try:
         mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message)
-        print('complete')
         return True
     except Exception as e:
         print(e)
@@ -129,7 +128,6 @@ def publish_to_thingsboard(mqttclient, message):
 
 
 def initial_processor(topic, message):
-    print("CALLED INIT: " + topic + "\n" + message)
     global pub_complete, con_flag
     getDBConfig()
     try:
@@ -141,37 +139,31 @@ def initial_processor(topic, message):
         return None
     mac_addr = topic.split("/")[3]
     client = get_client(mac_addr, db_cursor)
+    if(client == None):
+        print('Unregistered MAC ADDRESS: ' + mac_addr +
+              '\nTerminating publish sequence.\n')
+        return False
     mqtt_client = create_client(client)
     mqtt_client.connect(MQTT_Broker, int(MQTT_Port), int(Keep_Alive_Interval))
     # publish_to_thingsboard(mqtt_client, message)
-    print("pb: " + str(pub_complete))
     mqtt_client.loop_start()
-
     con_count = 0
     while(con_flag == False):
         con_count += 1
         print(con_count)
         sleep(0.05)
-    print("pre")
 
     publish_to_thingsboard(mqtt_client, message)
-    print("past")
     while(pub_complete == False):
         continue
     mqtt_client.loop_stop()
     mqtt_client.disconnect()
     pub_complete = False
-    print("FINISHED")
+    print("Publish sequence FINISHED")
     return True
 
 
 def proxy_fun(topic, message):
-    # print("=========================================================================")
-    # print(str(topic == '/sensor/v1/50:02:91:87:5e:3d') + '\n' + str(message ==
-    #                                                                 '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "30.31"}'))
-    # print("=========================================================================")
-
-    # return initial_processor(topic, message)
     return initial_processor(topic, message)
 
 # initial_processor('/sensor/v1/50:02:91:87:5e:3d',
