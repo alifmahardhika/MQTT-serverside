@@ -165,11 +165,11 @@ def initial_processor(topic, message):
     return True
 
 
-def dummy_fun(topic, message):
-    print("=========================================================================")
-    print(str(topic == '/sensor/v1/50:02:91:87:5e:3d') + '\n' + str(message ==
-                                                                    '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "30.31"}'))
-    print("=========================================================================")
+def proxy_fun(topic, message):
+    # print("=========================================================================")
+    # print(str(topic == '/sensor/v1/50:02:91:87:5e:3d') + '\n' + str(message ==
+    #                                                                 '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "30.31"}'))
+    # print("=========================================================================")
 
     # return initial_processor(topic, message)
     return initial_processor(topic, message)

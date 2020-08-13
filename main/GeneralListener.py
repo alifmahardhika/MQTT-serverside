@@ -10,7 +10,7 @@ NOTE: Requirements: pip install paho-mqtt
 '''
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 from datetime import datetime, timedelta
-from Gateway import initial_processor, dummy_fun
+from Gateway import initial_processor, proxy_fun
 from CheckConnHandler import check_conn_processor
 
 # MQTT Settings
@@ -54,7 +54,7 @@ def general_on_message(mosq, obj, msg):
     elif(len(topic_type) == 17):
         print('as sensor')
         # initial_processor(msg.topic, msg.payload.decode('utf-8'))
-        process_finished = dummy_fun(msg.topic, msg.payload.decode('utf-8'))
+        process_finished = proxy_fun(msg.topic, msg.payload.decode('utf-8'))
         if(process_finished):
             process_finished = None  # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
             pass
