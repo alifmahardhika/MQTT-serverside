@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt  # perlu pip install dulu
 import json
 import mariadb
 from pathlib import Path
-
+from time import sleep
 # MQTT Settings
 MQTT_Broker = "app.itsmyhealth.id"
 MQTT_Port = 1883
@@ -15,10 +15,10 @@ DB_HOST = ''
 DB_USER = ''
 DB_PASS = ''
 DB_NAME = ''
-
+con_flag = False
 # CLIENT-CREDENTIALS DICTIONARY; key = client name, value = usercredentials di thingsboard
 client_credentials = {
-    "Test": "credtest",  # kalo ada client baru tinggal tambah
+    "Test": "Y1RmDk5xNj1C5KfyxRLG",  # kalo ada client baru tinggal tambah
 }
 
 '''
@@ -28,22 +28,33 @@ Callback Functions, dipanggil sebagai hook dari client mqtt
 '''
 
 
+def get_gateway_client():
+    return client_credentials
+
+
 def on_connect(client, userdata, flags, rc):
+    global con_flag
+
     if rc != 0:
+        con_flag = False
         pass
         print("Unable to connect to MQTT Broker...")
     else:
+        con_flag = True
         print("Connected with THINGSBOARD Broker: " + str(MQTT_Broker))
 
 
 def on_publish(client, userdata, mid):
+    print('called pub')
     global pub_complete
     pub_complete = True
     pass
 
 
 def on_disconnect(client, userdata, rc):
+    global con_flag
 
+    con_flag = False
     if rc != 0:
         pass
 
@@ -98,19 +109,19 @@ def get_client(mac_addr, db_cursor):
 
 def create_client(client):
     tb_credentials = client_credentials.get(client)
-    mqttc = mqtt.Client('fromserver')
+    mqttc = mqtt.Client()
     mqttc.on_connect = on_connect
     mqttc.on_disconnect = on_disconnect
     mqttc.on_publish = on_publish
-    # mqttc.username_pw_set(tb_credentials, None)
-    mqttc.username_pw_set("Y1RmDk5xNj1C5KfyxRLG", None)
+    mqttc.username_pw_set(tb_credentials, None)
 
     return mqttc
 
 
 def publish_to_thingsboard(mqttclient, message):
     try:
-        mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message, qos=1)
+        mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message)
+        print('complete')
         return True
     except Exception as e:
         print(e)
@@ -119,7 +130,7 @@ def publish_to_thingsboard(mqttclient, message):
 
 def initial_processor(topic, message):
     print("CALLED INIT: " + topic + "\n" + message)
-    global pub_complete
+    global pub_complete, con_flag
     getDBConfig()
     try:
         db_cursor = db_connect()
@@ -132,9 +143,19 @@ def initial_processor(topic, message):
     client = get_client(mac_addr, db_cursor)
     mqtt_client = create_client(client)
     mqtt_client.connect(MQTT_Broker, int(MQTT_Port), int(Keep_Alive_Interval))
-    publish_to_thingsboard(mqtt_client, message)
+    # publish_to_thingsboard(mqtt_client, message)
     print("pb: " + str(pub_complete))
     mqtt_client.loop_start()
+
+    con_count = 0
+    while(con_flag == False):
+        con_count += 1
+        print(con_count)
+        sleep(0.05)
+    print("pre")
+
+    publish_to_thingsboard(mqtt_client, message)
+    print("past")
     while(pub_complete == False):
         continue
     mqtt_client.loop_stop()
@@ -144,5 +165,15 @@ def initial_processor(topic, message):
     return True
 
 
+def dummy_fun(topic, message):
+    print("=========================================================================")
+    print(str(topic == '/sensor/v1/50:02:91:87:5e:3d') + '\n' + str(message ==
+                                                                    '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "30.31"}'))
+    print("=========================================================================")
+
+    # return initial_processor(topic, message)
+    return initial_processor(topic, message)
+
 # initial_processor('/sensor/v1/50:02:91:87:5e:3d',
 #                   '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.1"}')
+# mosquitto_pub -d -h "app.itsmyhealth.id" -p 1882 -t "/sensor/v1/50:02:91:87:5e:3d" -u "sens1" -P "testing1" -m "{"sensor_mac_addr":"50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.3"}"

@@ -10,7 +10,7 @@ NOTE: Requirements: pip install paho-mqtt
 '''
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 from datetime import datetime, timedelta
-from Gateway import initial_processor
+from Gateway import initial_processor, dummy_fun
 from CheckConnHandler import check_conn_processor
 
 # MQTT Settings
@@ -29,19 +29,19 @@ Callback Functions, dipanggil sebagai hook dari client mqtt
 
 
 # Checks Result Code. RC = 0 = successful connection, other = refused
-def on_connect(mosq, obj, flags, rc):
+def general_on_connect(mosq, obj, flags, rc):
     if rc != 0:
         pass
         print("Unable to connect to MQTT Broker...")
     else:
         print("Connected with MQTT Broker: " + str(MQTT_BROKER))
-        # calls subscribe function, triggers on_subscribe callback
-        mqttc.subscribe(MQTT_TOPIC, 0)
+        # calls subscribe function, triggers general_on_subscribe callback
+        mqtt_general.subscribe(MQTT_TOPIC, 0)
 
 
 # ditrigger kalau ada message dengan topic yang di subscribe
 # akan memanggil function data handler dari file SensorDataToDB.py
-def on_message(mosq, obj, msg):
+def general_on_message(mosq, obj, msg):
 
     topic_type = msg.topic.split("/")[3]
     if(topic_type == "server-connection"):
@@ -52,8 +52,9 @@ def on_message(mosq, obj, msg):
             connection_checked = None
             pass
     elif(len(topic_type) == 17):
-        process_finished = initial_processor(
-            msg.topic, msg.payload.decode('utf-8'))
+        print('as sensor')
+        # initial_processor(msg.topic, msg.payload.decode('utf-8'))
+        process_finished = dummy_fun(msg.topic, msg.payload.decode('utf-8'))
         if(process_finished):
             process_finished = None  # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
             pass
@@ -66,43 +67,37 @@ def on_message(mosq, obj, msg):
     print("MQTT Topic: " + msg.topic)
 
     # v1/devices/me/telemetry
-    # mqttc.publish("/server-response",
+    # mqtt_general.publish("/server-response",
     #               '{"isConnected":true, "datetime" : ' + serverdatetime + '}')
     # print('{"isConnected":true, "datetime" : ' + serverdatetime + '}')
 
     # dipakai buat debug
 
 
-def on_subscribe(mosq, obj, mid, granted_qos):
+def general_on_subscribe(mosq, obj, mid, granted_qos):
     # print('called subs')
     pass
 
 
 '''
 ================================================================
-Main process yang diexecute:
-1. configure mqtt client connection
-2. assign event callbacks
-3. connect to mqtt broker
-4. start a forever loop
-
-Program tidak akan diterminate kecuali ada interrupt dari system
+Main process
 ================================================================
 '''
 print('start listener')
-mqttc = mqtt.Client()
-mqttc.username_pw_set("sens1", "testing1")
-
+mqtt_general = mqtt.Client()
+mqtt_general.username_pw_set("sens1", "testing1")
+client_list = [mqtt_general]
 # Assign event callbacks
-mqttc.on_message = on_message
-mqttc.on_connect = on_connect
-mqttc.on_subscribe = on_subscribe
+mqtt_general.on_message = general_on_message
+mqtt_general.on_connect = general_on_connect
+mqtt_general.on_subscribe = general_on_subscribe
 print('Finished setup, connecting ...')
 
 # Connect
-mqttc.connect(MQTT_BROKER, int(MQTT_PORT), int(Keep_Alive_Interval))
+mqtt_general.connect(MQTT_BROKER, int(MQTT_PORT), int(Keep_Alive_Interval))
 print('Connected and subscribed to topic ' + MQTT_TOPIC)
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++
 # Continue the network loop
-mqttc.loop_forever()
+mqtt_general.loop_forever()
