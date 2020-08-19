@@ -3,6 +3,9 @@ import json
 import mariadb
 from pathlib import Path
 from time import sleep
+from datetime import datetime, timedelta
+
+
 # MQTT Settings
 MQTT_Broker = "app.itsmyhealth.id"
 MQTT_Port = 1883
@@ -37,8 +40,9 @@ def on_connect(client, userdata, flags, rc):
 
     if rc != 0:
         con_flag = False
+        serverdatetime = get_server_date_time()
         pass
-        print("Unable to connect to MQTT Broker...")
+        print("[" + serverdatetime + "] Unable to connect to MQTT Broker...: ")
     else:
         con_flag = True
         print("Connected with THINGSBOARD Broker: " + str(MQTT_Broker))
@@ -79,17 +83,18 @@ def getDBConfig():
 
 
 def db_connect():
-    mydb = mariadb.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASS,
-        database=DB_NAME
-    )
     try:
+        mydb = mariadb.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASS,
+            database=DB_NAME
+        )
         db_cursor = mydb.cursor()
         return db_cursor
-    except mariadb.Error as e:
-        print(e)
+    except Exception as e:
+        serverdatetime = get_server_date_time()
+        print('[' + serverdatetime + '] ' + str(e))
         return None
 
 
@@ -102,8 +107,9 @@ def get_client(mac_addr, db_cursor):
         client = db_cursor.fetchone()[0]
         return str(client)
     except Exception as e:
-        print('Client not found')
-        # print(e)
+        serverdatetime = get_server_date_time()
+        print('[' + serverdatetime + '] Client not found: ' + str(mac_addr))
+        print(e)
         return None
 
 
@@ -123,7 +129,8 @@ def publish_to_thingsboard(mqttclient, message):
         mqttclient.publish(MQTT_TOPIC_TEMPERATURE, message)
         return True
     except Exception as e:
-        print(e)
+        serverdatetime = get_server_date_time()
+        print('[' + serverdatetime + ']' + str(e))
         return False
 
 
@@ -133,14 +140,17 @@ def initial_processor(topic, message):
     try:
         db_cursor = db_connect()
         if(db_cursor == None):
-            raise Exception("Database connection failed")
+            serverdatetime = get_server_date_time()
+            raise Exception('[' + str(serverdatetime) +
+                            "] Database connection failed.")
     except Exception as e:
         print(e)
         return None
     mac_addr = topic.split("/")[3]
     client = get_client(mac_addr, db_cursor)
     if(client == None):
-        print('Unregistered MAC ADDRESS: ' + mac_addr +
+        serverdatetime = get_server_date_time()
+        print('[' + str(serverdatetime)+'] Unregistered MAC ADDRESS: ' + mac_addr +
               '\nTerminating publish sequence.\n')
         return False
     mqtt_client = create_client(client)
@@ -163,9 +173,17 @@ def initial_processor(topic, message):
     return True
 
 
+def get_server_date_time():
+    seven_hours_from_server = datetime.now() + timedelta(hours=7)
+    serverdatetime = '{:%d:%m:%Y:%H:%M:%S:%f:}'.format(
+        seven_hours_from_server)
+    return serverdatetime
+
+
 def proxy_fun(topic, message):
     return initial_processor(topic, message)
 
-# initial_processor('/sensor/v1/50:02:91:87:5e:3d',
-#                   '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.1"}')
-# mosquitto_pub -d -h "app.itsmyhealth.id" -p 1882 -t "/sensor/v1/50:02:91:87:5e:3d" -u "sens1" -P "testing1" -m "{"sensor_mac_addr":"50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.3"}"
+
+initial_processor('/sensor/v1/50:02:91:87:5e:3d',
+                  '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.1"}')
+# mosquitto_pub -d -h "app.itsmyhealth.id" -p 1882 -t "/sensor/v1/50:02:91:87:5e:3d" -u "sens1" -P "testing1" -m "{"sensor_mac_addr":"50: 02: 91: 87: 5e: 3d", "time_stamp": "29-Jul-2020", "temperature": "36.3"}"
