@@ -23,7 +23,8 @@ def on_connect(client, userdata, flags, rc):
         pass
         print("Unable to connect to MQTT Broker...\n Error code: " + str(rc))
     else:
-        print("Connected AS CHECKER: " + str(MQTT_Broker))
+        # print("Connected AS CHECKER: " + str(MQTT_Broker))
+        pass
 
 
 def on_publish(client, userdata, mid):
@@ -54,12 +55,12 @@ def check_conn_processor(topic, message):
     mqttc.publish("/server-response",
                   '{"isConnected":true, "datetime" : ' + serverdatetime + '}', qos=1)
 
-    print("pb: " + str(pub_complete))
+    # print("pb: " + str(pub_complete))
     mqttc.loop_start()
     while(pub_complete == False):
         continue
     mqttc.loop_stop()
     mqttc.disconnect()
     pub_complete = False
-    print("FINISHED")
+    print("Connection Response Sent.")
     return True
