@@ -184,6 +184,6 @@ def proxy_fun(topic, message):
     return initial_processor(topic, message)
 
 
-initial_processor('/sensor/v1/50:02:91:87:5e:3d',
-                  '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.1"}')
+# initial_processor('/sensor/v1/50:02:91:87:5e:3d',
+#                   '{"sensor_mac_addr": "50:02:91:87:5e:3d", "time_stamp": "29-Jul-2020", "temperature": "36.1"}')
 # mosquitto_pub -d -h "app.itsmyhealth.id" -p 1882 -t "/sensor/v1/50:02:91:87:5e:3d" -u "sens1" -P "testing1" -m "{"sensor_mac_addr":"50: 02: 91: 87: 5e: 3d", "time_stamp": "29-Jul-2020", "temperature": "36.3"}"

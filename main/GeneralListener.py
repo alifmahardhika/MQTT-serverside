@@ -32,7 +32,8 @@ Callback Functions, dipanggil sebagai hook dari client mqtt
 def general_on_connect(mosq, obj, flags, rc):
     if rc != 0:
         pass
-        print("Unable to connect to MQTT Broker...")
+        serverdatetime = get_server_date_time()
+        print("[" + serverdatetime + "] Unable to connect to MQTT Broker...")
     else:
         print("Connected with MQTT Broker: " + str(MQTT_BROKER))
         # calls subscribe function, triggers general_on_subscribe callback
@@ -52,19 +53,15 @@ def general_on_message(mosq, obj, msg):
             connection_checked = None
             pass
     elif(len(topic_type) == 17):
-        print('as sensor')
-        # initial_processor(msg.topic, msg.payload.decode('utf-8'))
+        # initial_processor(msg.topic, msg.payload.decode('utf-8')) << somehow tidak bisa dipanggil langsung, jadi mesti lewat proxy fun
         process_finished = proxy_fun(msg.topic, msg.payload.decode('utf-8'))
         if(process_finished):
             process_finished = None  # maksudnya buat destroy thread tapi gatau ngefek apa engga haha
             pass
     else:
-        print("Bad topic request type: " + topic_type + " - " +
-              datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        serverdatetime = get_server_date_time()
+        print("[" + serverdatetime + "] Bad topic request type: " + topic_type)
     print("------------ON MESSAGE SEQUENCE FINSIHED----------")
-
-    print("MQTT Data Received...")
-    print("MQTT Topic: " + msg.topic)
 
     # v1/devices/me/telemetry
     # mqtt_general.publish("/server-response",
@@ -79,15 +76,22 @@ def general_on_subscribe(mosq, obj, mid, granted_qos):
     pass
 
 
+def get_server_date_time():
+    seven_hours_from_server = datetime.now() + timedelta(hours=7)
+    serverdatetime = '{:%d:%m:%Y:%H:%M:%S:%f:}'.format(
+        seven_hours_from_server)
+    return serverdatetime
+
+
 '''
 ================================================================
 Main process
+[INIT DAEMON HERE]
 ================================================================
 '''
-print('start listener')
+# print('start listener')
 mqtt_general = mqtt.Client()
 mqtt_general.username_pw_set("sens1", "testing1")
-client_list = [mqtt_general]
 # Assign event callbacks
 mqtt_general.on_message = general_on_message
 mqtt_general.on_connect = general_on_connect
