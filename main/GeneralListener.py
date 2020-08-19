@@ -8,10 +8,12 @@ NOTE: Tiap database maksimal hanya 1 program ini yang jalan, kalau lebih nanti a
 NOTE: Requirements: pip install paho-mqtt
 ========================================================================================================================
 '''
+import systemd.daemon
 import paho.mqtt.client as mqtt  # perlu pip install dulu
 from datetime import datetime, timedelta
 from Gateway import initial_processor, proxy_fun
 from CheckConnHandler import check_conn_processor
+
 
 # MQTT Settings
 MQTT_BROKER = "app.itsmyhealth.id"
@@ -101,7 +103,7 @@ print('Finished setup, connecting ...')
 # Connect
 mqtt_general.connect(MQTT_BROKER, int(MQTT_PORT), int(Keep_Alive_Interval))
 print('Connected and subscribed to topic ' + MQTT_TOPIC)
-
+systemd.daemon.notify('READY=1')
 # +++++++++++++++++++++++++++++++++++++++++++++++++++
 # Continue the network loop
 mqtt_general.loop_forever()
